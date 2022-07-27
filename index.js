@@ -95,15 +95,31 @@ function createEnemies() {
     }, 1000);
 };
 
+let animationFrameId;
 function animation() {
-    requestAnimationFrame(animation);
+    animationFrameId = requestAnimationFrame(animation);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     player.draw();
     bullets.forEach(bullet => {
         bullet.update();
     });
-    enemies.forEach(enemy => {
+    enemies.forEach((enemy, enemyIndex) => {
         enemy.update();
+        //hit player
+        const distance = Math.hypot(playerX - enemy.x, playerY - enemy.y);
+        if(distance - player.size - enemy.size < 1) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        //hit enemy
+        bullets.forEach((bullet, bulletIndex) => {
+            const distance = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
+            if(distance - bullet.size - enemy.size < 1) {
+                setTimeout(() => {
+                    enemies.splice(enemyIndex, 1);
+                    bullets.splice(bulletIndex, 1);
+                }, 0);
+            };
+        });
     });
 };
 
