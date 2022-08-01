@@ -7,6 +7,11 @@ canvas.height = innerHeight;
 const playerX = canvas.width / 2;
 const playerY = canvas.height / 2;
 
+//colors
+const playerColor = 'rgb(154, 247, 255)';
+const bulletColor = 'rgb(179, 249, 255)';
+const backgroundColor = 'rgba(0, 0, 0, 0.3)';
+
 class Player {
     constructor(x, y, size, color) {
         this.x = x;
@@ -69,7 +74,7 @@ class Enemy {
     };
 };
 
-const player = new Player(playerX, playerY, 30, 'red');
+const player = new Player(playerX, playerY, 20, playerColor);
 const bullets = [];
 const enemies = [];
 
@@ -85,11 +90,14 @@ function createEnemies() {
             x = Math.random() * canvas.width;
             y = Math.random() < 0.5 ? 0 - size : canvas.height + size;
         };
-        const color = 'black';
+        //enemy random color
+        const color = `hsl(${Math.random() * 360}, 75%, 50%)`;
         const angle = Math.atan2(playerY - y , playerX - x);
+        const speed = 1;
         const velocity = {
-            x: Math.cos(angle),
-            y: Math.sin(angle)
+            //speed of enemies
+            x: Math.cos(angle) * speed,
+            y: Math.sin(angle) * speed
         };
         enemies.push(new Enemy(x, y, size, color, velocity));
     }, 1000);
@@ -98,10 +106,21 @@ function createEnemies() {
 let animationFrameId;
 function animation() {
     animationFrameId = requestAnimationFrame(animation);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //background style
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw();
-    bullets.forEach(bullet => {
+    bullets.forEach((bullet, bulletIndex) => {
         bullet.update();
+        //remove bullets
+        if( bullet.x + bullet.size < 0              ||
+            bullet.x - bullet.size > canvas.width   ||
+            bullet.y + bullet.size < 0              ||
+            bullet.y - bullet.size > canvas.height) {
+                setTimeout(() => {
+                    bullets.splice(bulletIndex, 1);
+                }, 0);
+           };
     });
     enemies.forEach((enemy, enemyIndex) => {
         enemy.update();
@@ -125,11 +144,13 @@ function animation() {
 
 addEventListener('click', (e) => {
     const angle = Math.atan2(e.clientY - playerY, e.clientX - playerX);
+    const speed = 2;
     const velocity = {
-        x: Math.cos(angle),
-        y: Math.sin(angle)
+        //speed of bullets
+        x: Math.cos(angle) * speed,
+        y: Math.sin(angle) * speed
     };
-    bullets.push(new Bullet(playerX, playerY, 10, 'yellow', velocity));
+    bullets.push(new Bullet(playerX, playerY, 5, bulletColor, velocity));
 });
 
 animation();
