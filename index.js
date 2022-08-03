@@ -10,7 +10,7 @@ const playerY = canvas.height / 2;
 //colors
 const playerColor = 'rgb(154, 247, 255)';
 const bulletColor = 'rgb(179, 249, 255)';
-const backgroundColor = 'rgba(0, 0, 0, 0.3)';
+const backgroundColor = 'rgba(0, 0, 0, 0.2)';
 
 class Player {
     constructor(x, y, size, color) {
@@ -74,9 +74,38 @@ class Enemy {
     };
 };
 
+class Explosion {
+    constructor(x, y, size, color, velocity) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.color = color;
+        this.velocity = velocity;
+        this.lifeTime = 1;
+    };
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.lifeTime;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+    };
+
+    update() {
+        this.draw();
+        this.x = this.x + this.velocity.x;
+        this.y = this.y + this.velocity.y;
+        this.lifeTime -= 0.01;
+    };
+};
+
 const player = new Player(playerX, playerY, 20, playerColor);
 const bullets = [];
 const enemies = [];
+const explosions = [];
 
 function createEnemies() {
     setInterval(() => {
@@ -110,6 +139,14 @@ function animation() {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw();
+    explosions.forEach((explosion, explosionIndex) => {
+        // update or remove explosions
+        if(explosion.lifeTime <= 0) {
+            explosions.splice(explosionIndex, 1);
+        } else {
+            explosion.update();            
+        };
+    });
     bullets.forEach((bullet, bulletIndex) => {
         bullet.update();
         //remove bullets
@@ -127,12 +164,27 @@ function animation() {
         //hit player
         const distance = Math.hypot(playerX - enemy.x, playerY - enemy.y);
         if(distance - player.size - enemy.size < 1) {
+            //stop animation - game over
             cancelAnimationFrame(animationFrameId);
         }
         //hit enemy
         bullets.forEach((bullet, bulletIndex) => {
             const distance = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
             if(distance - bullet.size - enemy.size < 1) {
+                //create explosions on hit
+                for(let i = 0; i < enemy.size; i++) {
+                    explosions.push(new Explosion(
+                        bullet.x,
+                        bullet.y,
+                        ((Math.random() * 2) * Math.ceil(enemy.size/5)),
+                        enemy.color,
+                        {
+                            x: (Math.random() - 0.5) * 4,
+                            y: (Math.random() - 0.5) * 4
+                        }
+                    ));
+                };
+                //remove enemy and bullet on hit
                 setTimeout(() => {
                     enemies.splice(enemyIndex, 1);
                     bullets.splice(bulletIndex, 1);
