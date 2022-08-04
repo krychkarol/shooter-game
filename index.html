@@ -11,10 +11,81 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
+            background-color: black;
+        }
+        .topBar {
+            width: 100%;
+            display: flex;
+            position: fixed;
+            color: white;
+            margin-top: 5px;
+            user-select: none;
+            font-size: 1rem;
+            opacity: 0.8;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .menuContainer{
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            color: white;
+        }
+        .wrapper{
+            background-color: rgb(66, 66, 66);
+            width: clamp(300px, 75vw, 100vw);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        h1{
+            margin: 20px 0 0 0;
+            font-size: 4rem;
+            font-weight: 600;
+        }
+        p{
+            margin: 0 0 20px 0;
+            font-size: 1rem;
+            letter-spacing: 5px;
+        }
+        button{
+            margin: 20px;
+            padding: 10px;
+            width: 75%;
+            border-radius: 10px;
+            border: none;
+            font-size: 2rem;
+            font-weight: 900;
+            background-color: rgb(196, 196, 196);
+            letter-spacing: 10px;
+            transition: .5s all;
+        }
+        button:hover{
+            background-color: white;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+    <div class="topBar">
+        <div class="score">
+            <span>Score: </span>
+            <span id="scoreNumber">0</span>
+        </div>
+    </div>
+    <div class="menuContainer" id="menu">
+        <div class="wrapper">
+            <h1 id="scoreSummary">0</h1>
+            <p>POINTS</p>
+            <button id="startGame">START</button>                
+        </div>
+    </div>
     <canvas></canvas>
     <script src="index.js"></script>
 </body>

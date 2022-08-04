@@ -1,5 +1,9 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
+const scoreElement = document.querySelector('#scoreNumber');
+const scoreSummaryElement = document.querySelector('#scoreSummary');
+const startBtnElement = document.querySelector('#startGame');
+const menuElement = document.querySelector('#menu');
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -102,10 +106,21 @@ class Explosion {
     };
 };
 
-const player = new Player(playerX, playerY, 20, playerColor);
-const bullets = [];
-const enemies = [];
-const explosions = [];
+let player = new Player(playerX, playerY, 20, playerColor);
+let bullets = [];
+let enemies = [];
+let explosions = [];
+let score = 0;
+
+function iinitialize() {
+    player = new Player(playerX, playerY, 20, playerColor);
+    bullets = [];
+    enemies = [];
+    explosions = [];
+    score = 0;
+    scoreElement.innerHTML = score;
+    scoreSummaryElement.innerHTML = score;
+};
 
 function createEnemies() {
     setInterval(() => {
@@ -166,11 +181,16 @@ function animation() {
         if(distance - player.size - enemy.size < 1) {
             //stop animation - game over
             cancelAnimationFrame(animationFrameId);
+            menuElement.style.display = 'flex';
+            scoreSummaryElement.innerHTML = score;
         }
         //hit enemy
         bullets.forEach((bullet, bulletIndex) => {
             const distance = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
             if(distance - bullet.size - enemy.size < 1) {
+                //score
+                score += 10;
+                scoreElement.innerHTML = score;
                 //create explosions on hit
                 for(let i = 0; i < enemy.size; i++) {
                     explosions.push(new Explosion(
@@ -205,5 +225,9 @@ addEventListener('click', (e) => {
     bullets.push(new Bullet(playerX, playerY, 5, bulletColor, velocity));
 });
 
-animation();
-createEnemies();
+startBtnElement.addEventListener('click', () => {
+    iinitialize();
+    animation();
+    createEnemies();
+    menuElement.style.display = 'none';
+});
