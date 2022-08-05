@@ -1,118 +1,29 @@
-const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
-const scoreElement = document.querySelector('#scoreNumber');
-const scoreSummaryElement = document.querySelector('#scoreSummary');
-const startBtnElement = document.querySelector('#startGame');
-const menuElement = document.querySelector('#menu');
+import { Player } from './models/Player.js';
+import { Bullet } from './models/Bullet.js';
+import { Enemy } from './models/Enemy.js';
+import { Explosion } from './models/Explosion.js';
 
+import {playerColor, bulletColor, backgroundColor, canvas, ctx, scoreElement, scoreSummaryElement, startBtnElement, menuElement } from './settings.js';
+
+//set 100% width & height
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+//set player position
 const playerX = canvas.width / 2;
 const playerY = canvas.height / 2;
 
-//colors
-const playerColor = 'rgb(154, 247, 255)';
-const bulletColor = 'rgb(179, 249, 255)';
-const backgroundColor = 'rgba(0, 0, 0, 0.2)';
-
-class Player {
-    constructor(x, y, size, color) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.color = color;
-    };
-
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-    };
-};
-
-class Bullet {
-    constructor(x, y, size, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.color = color;
-        this.velocity = velocity;
-    };
-
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-    };
-
-    update() {
-        this.draw();
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;
-    };
-};
-
-class Enemy {
-    constructor(x, y, size, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.color = color;
-        this.velocity = velocity;
-    };
-
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-    };
-
-    update() {
-        this.draw();
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;
-    };
-};
-
-class Explosion {
-    constructor(x, y, size, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.color = color;
-        this.velocity = velocity;
-        this.lifeTime = 1;
-    };
-
-    draw() {
-        ctx.save();
-        ctx.globalAlpha = this.lifeTime;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.restore();
-    };
-
-    update() {
-        this.draw();
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;
-        this.lifeTime -= 0.01;
-    };
-};
-
+//init
 let player = new Player(playerX, playerY, 20, playerColor);
 let bullets = [];
 let enemies = [];
 let explosions = [];
 let score = 0;
+let interval;
+let animationFrameId;
 
-function iinitialize() {
+//restart all variables
+function initialize() {
     player = new Player(playerX, playerY, 20, playerColor);
     bullets = [];
     enemies = [];
@@ -122,11 +33,14 @@ function iinitialize() {
     scoreSummaryElement.innerHTML = score;
 };
 
+//create enemies
 function createEnemies() {
-    setInterval(() => {
+    interval = setInterval(() => {
+        //size 5 to 40
         const size = Math.random() * (40 - 5) + 5;
         let x;
         let y;
+        //random create location
         if(Math.random() < 0.5) {
             x = Math.random() < 0.5 ? 0 - size : canvas.width + size;
             y = Math.random() * canvas.height;
@@ -137,9 +51,9 @@ function createEnemies() {
         //enemy random color
         const color = `hsl(${Math.random() * 360}, 75%, 50%)`;
         const angle = Math.atan2(playerY - y , playerX - x);
+        //speed of enemies
         const speed = 1;
         const velocity = {
-            //speed of enemies
             x: Math.cos(angle) * speed,
             y: Math.sin(angle) * speed
         };
@@ -147,13 +61,15 @@ function createEnemies() {
     }, 1000);
 };
 
-let animationFrameId;
+//animation function
 function animation() {
     animationFrameId = requestAnimationFrame(animation);
     //background style
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    //draw player
     player.draw();
+    //draw explosions
     explosions.forEach((explosion, explosionIndex) => {
         // update or remove explosions
         if(explosion.lifeTime <= 0) {
@@ -162,6 +78,7 @@ function animation() {
             explosion.update();            
         };
     });
+    //draw bullets
     bullets.forEach((bullet, bulletIndex) => {
         bullet.update();
         //remove bullets
@@ -174,21 +91,24 @@ function animation() {
                 }, 0);
            };
     });
+    //draw enemies
     enemies.forEach((enemy, enemyIndex) => {
         enemy.update();
-        //hit player
+        //distance enemy to player
         const distance = Math.hypot(playerX - enemy.x, playerY - enemy.y);
+        //hit player - stop animation - game over
         if(distance - player.size - enemy.size < 1) {
-            //stop animation - game over
             cancelAnimationFrame(animationFrameId);
+            clearInterval(interval);
             menuElement.style.display = 'flex';
             scoreSummaryElement.innerHTML = score;
         }
-        //hit enemy
         bullets.forEach((bullet, bulletIndex) => {
+            //distance enemy to bullet
             const distance = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
+            //hit enemy
             if(distance - bullet.size - enemy.size < 1) {
-                //score
+                //add score
                 score += 10;
                 scoreElement.innerHTML = score;
                 //create explosions on hit
@@ -214,19 +134,21 @@ function animation() {
     });
 };
 
+//on click event - shoot bullet
 addEventListener('click', (e) => {
     const angle = Math.atan2(e.clientY - playerY, e.clientX - playerX);
+    //speed of bullets
     const speed = 2;
     const velocity = {
-        //speed of bullets
         x: Math.cos(angle) * speed,
         y: Math.sin(angle) * speed
     };
     bullets.push(new Bullet(playerX, playerY, 5, bulletColor, velocity));
 });
 
+//start or restart game
 startBtnElement.addEventListener('click', () => {
-    iinitialize();
+    initialize();
     animation();
     createEnemies();
     menuElement.style.display = 'none';
