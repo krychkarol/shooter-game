@@ -1,7 +1,7 @@
-# Simple shooter game
+# Shooter game
 
 ## General info
-This project is a simple JS game
+This project is a simple HTML, JS and Canvas game.
 
 ## Features
 - Score
