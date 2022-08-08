@@ -11,4 +11,4 @@ export const menuElement = document.querySelector('#menu');
 //colors
 export const playerColor = 'rgb(154, 247, 255)';
 export const bulletColor = 'rgb(179, 249, 255)';
-export const backgroundColor = 'rgba(0, 0, 0, 0.2)';
+export const backgroundColor = 'rgba(0, 0, 0, 1)';
